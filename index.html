@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Turnos Integrado</title>
+    <!-- Tailwind CSS para diseño y estilos base -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800">
+
+    <!-- Header / Encabezado -->
+    <header class="bg-indigo-700 text-white shadow-lg py-6 px-4 mb-8">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold flex items-center gap-3">
+                    <i class="fa-solid fa-calendar-check text-indigo-300">
+                    Agenda Médica & Obra Social
+                </h1>
+                <p class="text-indigo-200 text-sm mt-1">Gestión unificada de citas sin solapamientos</p>
+            </div>
+            <div class="bg-indigo-800/60 px-4 py-2 rounded-lg border border-indigo-500/30 text-xs flex items-center gap-3">
+                <i class="fa-solid fa-shield-halved text-emerald-400 text-base">
+                <div>
+                    <p class="font-semibold text-indigo-100">Reglas Activas:</p>
+                    <p class="text-indigo-300">≥ Hoy | Intervalos: 30 min | Anti-solapamiento</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 pb-12">
+        <!-- Layout principal de 2 columnas -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- COLUMNA IZQUIERDA: Turnos de Obra Social -->
+            <section class="bg-white rounded-2xl shadow-md border border-slate-200 flex flex-col overflow-hidden">
+                <div class="bg-cyan-600 text-white p-4 flex justify-between items-center">
+                    <h2 class="text-lg font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-id-card">
+                        Turnos de Obra Social
+                    </h2>
+                    <span class="bg-cyan-700 text-xs px-2.5 py-1 rounded-full border border-cyan-400/30">Trámites y Autorizaciones</span>
+                </div>
+
+                <div class="p-6 flex-1 flex flex-col gap-6">
+                    <!-- Formulario Obra Social -->
+                    <form id="form-obra-social" class="space-y-4 bg-cyan-50/50 p-4 rounded-xl border border-cyan-100">
+                        <h3 class="text-xs font-bold text-cyan-800 uppercase tracking-wider">Nuevo Turno Obra Social</h3>
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Obra Social / Prepaga</label>
+                            <input type="text" id="os-entidad" required placeholder="Ej. OSDE, Swiss Medical, PAMI..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Trámite a Realizar</label>
+                            <input type="text" id="os-tramite" required placeholder="Ej. Autorización de estudios, Carnet..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha</label>
+                                <input type="date" id="os-fecha" required class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:outline-none bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Hora (cada 30m)</label>
+                                <select id="os-hora" required class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:outline-none bg-white">
+                                    <option value="">Seleccionar...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors shadow-sm flex justify-center items-center gap-2">
+                            <i class="fa-solid fa-plus">
+                            Agendar Turno Obra Social
+                        </button>
+                    </form>
+
+                    <!-- Lista de Turnos Obra Social -->
+                    <div class="flex-1">
+                        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex justify-between items-center">
+                            <span>Turnos Agendados</span>
+                            <span id="cant-os" class="bg-cyan-100 text-cyan-800 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                        </h3>
+                        <div id="lista-os" class="space-y-3 max-h-[350px] overflow-y-auto pr-1">
+                            <!-- Inyección dinámica con JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- COLUMNA DERECHA: Turnos Médicos -->
+            <section class="bg-white rounded-2xl shadow-md border border-slate-200 flex flex-col overflow-hidden">
+                <div class="bg-emerald-600 text-white p-4 flex justify-between items-center">
+                    <h2 class="text-lg font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-user-doctor">
+                        Turnos Médicos
+                    </h2>
+                    <span class="bg-emerald-700 text-xs px-2.5 py-1 rounded-full border border-emerald-400/30">Consultas y Especialidades</span>
+                </div>
+
+                <div class="p-6 flex-1 flex flex-col gap-6">
+                    <!-- Formulario Turnos Médicos -->
+                    <form id="form-medico" class="space-y-4 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+                        <h3 class="text-xs font-bold text-emerald-800 uppercase tracking-wider">Nuevo Turno Médico</h3>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Especialidad</label>
+                                <input type="text" id="med-especialidad" required placeholder="Ej. Cardiología, Clínica..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Médico / Profesional</label>
+                                <input type="text" id="med-doctor" required placeholder="Ej. Dr. Pérez..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha</label>
+                                <input type="date" id="med-fecha" required class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Hora (cada 30m)</label>
+                                <select id="med-hora" required class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                                    <option value="">Seleccionar...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors shadow-sm flex justify-center items-center gap-2">
+                            <i class="fa-solid fa-plus">
+                            Agendar Turno Médico
+                        </button>
+                    </form>
+
+                    <!-- Lista de Turnos Médicos -->
+                    <div class="flex-1">
+                        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex justify-between items-center">
+                            <span>Turnos Agendados</span>
+                            <span id="cant-med" class="bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                        </h3>
+                        <div id="lista-med" class="space-y-3 max-h-[350px] overflow-y-auto pr-1">
+                            <!-- Inyección dinámica con JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Modal de Alerta de Solapamiento/Error -->
+    <div id="modal-error" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-rose-100 text-center animate-bounce-short">
+            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-triangle-exclamation">
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">¡Conflicto de Horario!</h3>
+            <p id="mensaje-error" class="text-slate-600 text-sm mb-6"></p>
+            <button id="btn-cerrar-modal" class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium py-2 px-6 rounded-lg transition-colors">
+                Entendido
+            </button>
+        </div>
+    </div>
+
+    <!-- Script principal JS -->
+    <script src="script.js"></script>
+</body>
+</html>
